@@ -1,0 +1,48 @@
+name: release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      release-created: ${{ steps.release.outputs.release_created }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Release please
+        uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          release-type: simple
+  server-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release-created }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: build
+        run: pnpm run build
+      - name: push
+        run: pnpm run push
