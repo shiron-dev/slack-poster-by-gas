@@ -5,5 +5,5 @@ export default antfu({
     semi: true,
     quotes: "double",
   },
-  ignores: ["bundled", "schema", ".clasprc.json"],
+  ignores: ["bundled", "schema", "**/.clasprc.json"],
 });
