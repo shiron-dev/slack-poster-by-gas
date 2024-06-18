@@ -44,5 +44,9 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: build
         run: pnpm run build
+      - name: Save the sercret file
+        run: envsubst < .clasprc.json > ~/.clasprc.json
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
       - name: push
         run: pnpm run push
