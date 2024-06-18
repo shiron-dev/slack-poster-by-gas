@@ -7,7 +7,7 @@ const SLACK_TOKEN
 function sendSlackMessages() {
   // スプレッドシートを開く
   const spreadsheet = SpreadsheetApp.openByUrl(
-    "***REMOVED***",
+    PropertiesService.getScriptProperties().getProperty("SPREADSHEET_URL"),
   );
   const sheet = spreadsheet.getSheetByName("calender");
 
