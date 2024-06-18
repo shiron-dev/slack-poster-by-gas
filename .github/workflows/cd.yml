@@ -24,7 +24,7 @@ jobs:
         id: release
         with:
           release-type: simple
-  server-deploy:
+  deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: release-please
@@ -45,8 +45,8 @@ jobs:
       - name: build
         run: pnpm run build
       - name: Save the sercret file
-        run: envsubst < .clasprc.json > ~/.clasprc.json
+        run: envsubst < .github/workflows.clasprc.json > .clasprc.json
         env:
           CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
       - name: push
-        run: pnpm run push
+        run: pnpm run push -A .clasprc.json
