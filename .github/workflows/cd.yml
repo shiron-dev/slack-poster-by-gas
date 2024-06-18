@@ -45,7 +45,9 @@ jobs:
       - name: build
         run: pnpm run build
       - name: Save the sercret file
-        run: envsubst < .github/workflows.clasprc.json > .clasprc.json
+        run: |
+          envsubst < .github/workflows/.clasprc.json > .clasprc.json
+          cp .clasprc.json ~/.clasprc.json
         env:
           CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
       - name: push
