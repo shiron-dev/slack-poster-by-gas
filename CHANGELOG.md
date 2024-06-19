@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/shiron-dev/slack-poster-by-gas/compare/v1.1.0...v1.1.1) (2024-06-19)
+
+
+### Bug Fixes
+
+* cd ([e59b717](https://github.com/shiron-dev/slack-poster-by-gas/commit/e59b7170c0f1fc0b23a9a58bcd587013f2767561))
+
 ## [1.1.0](https://github.com/shiron-dev/slack-poster-by-gas/compare/v1.0.0...v1.1.0) (2024-06-19)
 
 
