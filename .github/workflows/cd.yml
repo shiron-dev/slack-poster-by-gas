@@ -28,6 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: release-please
+    environment: deploy
     if: ${{ needs.release-please.outputs.release-created }}
     steps:
       - uses: actions/checkout@v4
