@@ -1,5 +1,3 @@
-import "@types/google-apps-script";
-
 const SLACK_TOKEN
   = PropertiesService.getScriptProperties().getProperty("SLACK_TOKEN");
 
@@ -11,7 +9,7 @@ const OFFICE_CHANNEL = "C067YFG5V1V";
 type EventCategory = "全体" | string;
 type Department = "執行部" | string;
 
-interface Event<T> {
+interface EventPlan<T extends EventCategory | Department> {
   category: T;
   event: string;
 }
@@ -64,20 +62,22 @@ function sendSlackMessages() {
           .getRange(`${getClmName(i + 2)}:${getClmName(i + 2)}`)
           .getValues();
 
-        const plan: Event<EventCategory>[] = col
-          .map((v, i) => ({ category: String(titles[i][0]), event: String(v[0]) }))
+        const plan: EventPlan<EventCategory>[] = col
+          .map((v, i) => ({ category: String(titles[i][0]) as EventCategory, event: String(v[0]) }))
           .filter((v, i) => i > 3 && v.category !== "");
-        const mtgPlan: Event<Department>[] = mtg
-          .map((v, i) => ({ category: String(mtgTitles[i][0]), event: String(v[0]) }))
+        const mtgPlan: EventPlan<Department>[] = mtg
+          .map((v, i) => ({ category: String(mtgTitles[i][0]) as Department, event: String(v[0]) }))
           .filter((v, i) => i > 4 && v.category !== "");
-        beforeSchedule(cellDate, plan, mtgPlan);
+        const afterDate = new Date(cellDate);
+        afterDate.setDate(afterDate.getDate() + 1);
+        beforeSchedule(afterDate, plan, mtgPlan);
       }
       break;
     }
   }
 }
 
-function beforeSchedule(date: Date, plan: Event<EventCategory>[], mtgPlan: Event<Department>[]) {
+function beforeSchedule(date: Date, plan: EventPlan<EventCategory>[], mtgPlan: EventPlan<Department>[]) {
   for (const event of mtgPlan) {
     switch (event.category) {
       case "執行部":
