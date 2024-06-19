@@ -3,6 +3,19 @@ import "@types/google-apps-script";
 const SLACK_TOKEN
   = PropertiesService.getScriptProperties().getProperty("SLACK_TOKEN");
 
+const TEIREI = "定例";
+const OFFICE_TEIREI_TEMP = PropertiesService.getScriptProperties().getProperty("OFFICE_TEIREI_TEMP");
+const OFFICE_TEIREI_DIR = PropertiesService.getScriptProperties().getProperty("OFFICE_TEIREI_DIR");
+const OFFICE_CHANNEL = "C067YFG5V1V";
+
+type EventCategory = "全体" | string;
+type Department = "執行部" | string;
+
+interface Event<T> {
+  category: T;
+  event: string;
+}
+
 // eslint-disable-next-line unused-imports/no-unused-vars
 function sendSlackMessages() {
   // スプレッドシートを開く
@@ -43,9 +56,47 @@ function sendSlackMessages() {
         break;
       }
       sendToSlack(channelId, message);
+      {
+        const col = sheet
+          .getRange(`${getClmName(i + 2)}:${getClmName(i + 2)}`)
+          .getValues();
+        const mtg = mtgSheet
+          .getRange(`${getClmName(i + 2)}:${getClmName(i + 2)}`)
+          .getValues();
+
+        const plan: Event<EventCategory>[] = col
+          .map((v, i) => ({ category: String(titles[i][0]), event: String(v[0]) }))
+          .filter((v, i) => i > 3 && v.category !== "");
+        const mtgPlan: Event<Department>[] = mtg
+          .map((v, i) => ({ category: String(mtgTitles[i][0]), event: String(v[0]) }))
+          .filter((v, i) => i > 4 && v.category !== "");
+        beforeSchedule(cellDate, plan, mtgPlan);
+      }
       break;
     }
   }
+}
+
+function beforeSchedule(date: Date, plan: Event<EventCategory>[], mtgPlan: Event<Department>[]) {
+  for (const event of mtgPlan) {
+    switch (event.category) {
+      case "執行部":
+        if (event.event === TEIREI) {
+          const id = makeTemp(toFormatDate(date, "yyyy/MM/dd"), OFFICE_TEIREI_TEMP, OFFICE_TEIREI_DIR);
+          const url = DriveApp.getFileById(id).getUrl();
+          const message = `<!channel> 明日、${toFormatDate(date, "yyyy/MM/dd (E)")}は定例です！\n`
+            + `議事録は<${url}|${toFormatDate(date, "yyyy/MM/dd")}の議事録>にあります\n`
+            + "事前に記入しておいてください";
+          sendToSlack(OFFICE_CHANNEL, message);
+        }
+        break;
+    }
+  }
+}
+
+function makeTemp(title: string, original: string, dir: string): string {
+  const temp = DriveApp.getFileById(original).makeCopy(title, DriveApp.getFolderById(dir));
+  return temp.getId();
 }
 
 // メッセージのフォーマット
@@ -63,12 +114,7 @@ function formatMessage(date, titles, col, mtgTitles, mtg) {
     .filter((v, i) => i > 4 && v[1] !== "")
     .map(v => `${v[0]}: ${v[1]}`)
     .join("\n");
-
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  const week = ["日", "月", "火", "水", "木", "金", "土"][date.getDay()];
-  const formattedDate = `${year}/${month}/${day} (${week})`;
+  const formattedDate = toFormatDate(date, "yyyy/MM/dd (E)");
 
   const formatContent = content === "" ? "" : `*今日の予定*\n${content}`;
   const formatMTG
@@ -78,6 +124,22 @@ function formatMessage(date, titles, col, mtgTitles, mtg) {
     return null;
   }
   return [formatHead, formatContent, formatMTG].join("\n");
+}
+
+type DateFormattedType = "yyyy/MM/dd (E)" | "yyyy/MM/dd";
+
+function toFormatDate(date: Date, formattedType: DateFormattedType): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const week = ["日", "月", "火", "水", "木", "金", "土"][date.getDay()];
+  switch (formattedType) {
+    case "yyyy/MM/dd (E)":
+      return `${year}/${month}/${day} (${week})`;
+    case "yyyy/MM/dd":
+      return `${year}/${month}/${day}`;
+  }
+  return "";
 }
 
 /**
