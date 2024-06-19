@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.0](https://github.com/shiron-dev/slack-poster-by-gas/compare/v1.0.0...v1.1.0) (2024-06-19)
+
+
+### Features
+
+* office ([6eb76c8](https://github.com/shiron-dev/slack-poster-by-gas/commit/6eb76c8d5df4c2f728277271f13d148def4517f4))
+
+
+### Bug Fixes
+
+* fix office ([b212c7e](https://github.com/shiron-dev/slack-poster-by-gas/commit/b212c7efa918c92505ee001acee9459584c3ac60))
+
 ## 1.0.0 (2024-06-18)
 
 
